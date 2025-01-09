@@ -261,6 +261,8 @@ def _gomock_reflect(name, library, out, mockgen_tool, **kwargs):
     )
 
 def _gomock_prog_gen_impl(ctx):
+    go = go_context(ctx, include_deprecated_properties = False)
+
     args = ["-prog_only"]
     args.append(ctx.attr.library[GoInfo].importpath)
     args.append(",".join(ctx.attr.interfaces))
@@ -271,8 +273,11 @@ def _gomock_prog_gen_impl(ctx):
         outputs = [out],
         tools = [cmd],
         command = """
+            export GOROOT=$(pwd)/{goroot} &&
+            export PATH=$GOROOT/bin:$PATH &&
            {cmd} {args} > {out}
         """.format(
+            goroot = go.sdk.root_file.dirname,
             cmd = "$(pwd)/" + cmd.path,
             args = " ".join(args),
             out = out.path,
